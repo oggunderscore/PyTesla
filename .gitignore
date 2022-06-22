@@ -1,6 +1,10 @@
 #Do not push these
 cache.json
 .DS_Store
+github
+github.pub
+jsonManager.py
+tokens.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

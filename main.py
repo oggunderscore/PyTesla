@@ -1,10 +1,9 @@
-import discord, teslapy
-
-from credManager import *
+import discord, teslapy, json
 
 tesla = teslapy.Tesla('oggunderscore@gmail.com')
 
-
+with open('tokens.json', 'r') as openfile:
+    tokens = json.load(openfile)
 
 class MyClient(discord.Client):
     async def on_ready(self):
@@ -30,10 +29,12 @@ class MyClient(discord.Client):
             if tesla.authorized:
                 print('Attempting to logout...')
                 tesla.logout()
+                if not tesla.authorized:
+                    print('Successful logout')
                 
         
         #print(tesla.vehicle_list()[0])
 
 client = MyClient()
-client.run('NDU4MDQ3OTcyNjYwMjE1ODQx.Wybsag.fZK4_L0VQ9Zx-Qziv0XOqe3oZ6M')
+client.run(tokens['discordToken'])
 tesla.close()
