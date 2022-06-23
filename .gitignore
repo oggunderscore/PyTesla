@@ -5,6 +5,7 @@ github
 github.pub
 jsonManager.py
 tokens.json
+tokenskevin.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

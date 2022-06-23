@@ -1,8 +1,8 @@
 # PyTesla
 Discord &amp; Tesla Integration
 
-##Contributors
+## Contributors
 
-Kevin Nguyen
+[Kevin Nguyen](https://github.com/oggunderscore)
 
-Alexander Tran
+[Alexander Tran](https://github.com/FullyAscended/FullyAscended.github.io)
