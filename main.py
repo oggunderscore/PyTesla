@@ -1,6 +1,6 @@
 import discord, teslapy, json
 
-tesla = teslapy.Tesla('fujinxyukinko@gmail.com')
+tesla = teslapy.Tesla('oggunderscore@gmail.com')
 
 with open('tokens.json', 'r') as openfile:
     tokens = json.load(openfile)
@@ -35,8 +35,6 @@ class MyClient(discord.Client):
                 #print('Attempting to logout...')
                 await message.channel.send('Attempting to logout...')
                 tesla.logout()
-                if not tesla.authorized:
-                    await message.channel.send('Successful logout')
             if not tesla.authorized:
                 #print('Successful logout')
                 if isinstance(message.channel, discord.channel.DMChannel) and message.author != self.user:
