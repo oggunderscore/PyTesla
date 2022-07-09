@@ -6,6 +6,8 @@ github.pub
 jsonManager.py
 tokens.json
 tokenskevin.json
+teslatoken.json
+emails.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
