@@ -1,7 +1,9 @@
-import discord, teslapy, json, validators
+import discord, teslapy, json
 
-# TODO: KNOWN BUGS LIST
+# TODO: TODO / KNOWN BUGS LIST
 # friend honked my car? he isnt logged on at all possibly because vehicle list is set to 0 which brings the first in the list?
+# Implement a function to consistently refresh cache.json so we have up to date creds?
+# Sometimes Vehicle error when sending command; teslapy.VehicleError: Meta slave not woken up within 60 seconds; issue is bot will not read anythiing else during those 60s
 
 #TODO: QOL LIST
 #maybe t! email with no argument returns what email you have it set to for ease of access?
@@ -49,20 +51,19 @@ class MyClient(discord.Client):
 
             if not tesla.authorized:
                 # Prompt user to open the URL in a browser and enter the code
-                await message.channel.send("Use browser to login. Page Not Found will be shown at success.\nOpen this URL then send back the redirected url: " + tesla.authorization_url())
+                await message.channel.send("Click the link below to login. Page Not Found will be shown at success.\n\n" + tesla.authorization_url() + "\n\nPlease copy the URL and paste it below after successful login")
                 # Wait for their reply with the url
+
+                # Perhaps can move this function outside to cleanup the code in the future?
                 def urlcheck(m):
-                    if validators.url(m.content):
-                        #print('True')
+                    if m.content.startswith("https://auth.tesla.com/void/callback?code="):
                         return True
                     else:
-                        #print('False')
                         return False
-
                 msg = await client.wait_for('message', check=urlcheck)
                 if msg:
+                    await message.channel.send("Attempting to login with provided URL...")
                     tesla.fetch_token(authorization_response=msg.content)
-                    await message.channel.send("URL has been recieved.")
                 if tesla.authorized:
                     await message.channel.send('Successful login.')
                 else:
@@ -95,6 +96,46 @@ class MyClient(discord.Client):
             with open("emails.json", "w") as outfile:
                 outfile.write(json_object)
             await message.channel.send('Email has been set')
+
+        # TODO: This function will implement the user setting up their email process and logging in
+        if message.content.startswith('t! setup'):
+            await message.channel.send('Welcome to the setup process. \n')
+
+            with open('emails.json', 'r') as openfile:
+                emailDictionary = json.load(openfile)
+                if str(client.user.id) in emailDictionary:
+                    await message.channel.send('Your current email is: ' + emailDictionary[str(client.user.id)])
+                else:
+                    await message.channel.send('You are currently do not have a registered email with us.')
+
+            await message.channel.send('Would you like to update or set your email? (Yes or No)\n')
+            msg = await client.wait_for('message', check=None)
+
+            if msg.content.lower().startswith('yes'):
+                await message.channel.send('Please enter your email: ')
+                def emailCheck(message):
+                        if "@" in message.content:
+                            return True
+                        else:
+                            # TODO: Add error message for invalid email and prompt to try again?
+                            return False
+                email = await client.wait_for('message', check=emailCheck)
+
+                with open('emails.json', 'r') as openfile:
+                    emailDictionary = json.load(openfile)
+                emailDictionary2={client.user.id:email.content}
+                emailDictionary.update(emailDictionary2)
+                json_object= json.dumps(emailDictionary)
+                with open("emails.json", "w") as outfile:
+                    outfile.write(json_object)
+                await message.channel.send('Email has been successfully updated to: ' + email.content + "\nYou can now login with t! login")
+
+                # TODO: Implement "Would you like to login now?"
+
+            else:
+                await message.channel.send('Setup process has been cancelled.')
+                return
+
 
         if message.content.startswith('t! debugid'):
             await message.channel.send(client.user.id)
