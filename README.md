@@ -1,3 +1,17 @@
-Tesla Discord Bot integration using Python
+# PyTesla
+Discord &amp; Tesla Integration
 
-Contributors: Kevin Nguyen & Alexander Tran
+## Contributors
+
+[Kevin Nguyen](https://github.com/oggunderscore)
+
+[Alexander Tran](https://github.com/FullyAscended/FullyAscended.github.io)
+
+### Commands
+
+t! help
+t! test
+t! login
+t! logout
+t! email
+t! debugid
