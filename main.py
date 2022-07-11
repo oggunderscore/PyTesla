@@ -4,9 +4,11 @@ import discord, teslapy, json
 # friend honked my car? he isnt logged on at all possibly because vehicle list is set to 0 which brings the first in the list?
 # Implement a function to consistently refresh cache.json so we have up to date creds?
 # Sometimes Vehicle error when sending command; teslapy.VehicleError: Meta slave not woken up within 60 seconds; issue is bot will not read anythiing else during those 60s
+#freezes on t! test if not loged in, maybe waiting for timeout
 
 #TODO: QOL LIST
 #maybe t! email with no argument returns what email you have it set to for ease of access?
+
 
 with open('tokens.json', 'r') as openfile:
     tokens = json.load(openfile)
@@ -20,6 +22,12 @@ class MyClient(discord.Client):
         print('Logged on as {0}!'.format(self.user))
 
     async def on_message(self, message):
+
+        def getEmail(passid):
+            with open('emails.json', 'r') as openfile:
+                emailDictionary = json.load(openfile)
+                return emailDictionary[str(passid)]
+
         print('Message from {0.author}: {0.content}'.format(message))
 
         if message.content.startswith('t! help'):
@@ -28,15 +36,13 @@ class MyClient(discord.Client):
             embed.set_thumbnail(url="https://cdn.mos.cms.futurecdn.net/xz4NVQhHaHShErxar7YLn.jpg")
             embed.add_field(name="t! test", value="pulls up data about your tesla")
             embed.add_field(name="t! login", value="logs you into tesla, must do t! email first")
-            embed.add_field(name="t! email [email]", value="binds an email to your discord user id")
+            embed.add_field(name="t! setup", value="setup your account with us")
             embed.add_field(name="t! logout", value="logs you out")
             embed.add_field(name="t! debugid", value="tells you your id, email, and token")
             await message.channel.send(embed=embed)
 
         if message.content.startswith('t! test'):
-            with open('emails.json', 'r') as openfile:
-                emailDictionary = json.load(openfile)
-            vehicles = teslapy.Tesla(emailDictionary[str(client.user.id)]).vehicle_list()
+            vehicles = teslapy.Tesla(getEmail(client.user.id)).vehicle_list()
             await message.channel.send(vehicles[0])
 
         if message.content.startswith('t! login'):
@@ -81,22 +87,6 @@ class MyClient(discord.Client):
                 teslapy.Tesla(emailDictionary[str(client.user.id)]).logout()
             if not teslapy.Tesla(emailDictionary[str(client.user.id)]).authorized:
                 await message.channel.send('Successful logout')
-
-        if message.content.startswith('t! email'):
-            text = message.content
-            email = text.split()[-1]
-            if(email=="email"):
-                await message.channel.send('empty field for email. try: t! email [your email]')
-                return
-            with open('emails.json', 'r') as openfile:
-                emailDictionary = json.load(openfile)
-            emailDictionary2={client.user.id:email}
-            emailDictionary.update(emailDictionary2)
-            json_object= json.dumps(emailDictionary)
-            with open("emails.json", "w") as outfile:
-                outfile.write(json_object)
-            await message.channel.send('Email has been set')
-
         # TODO: This function will implement the user setting up their email process and logging in
         if message.content.startswith('t! setup'):
             await message.channel.send('Welcome to the setup process. \n')
@@ -123,7 +113,7 @@ class MyClient(discord.Client):
 
                 with open('emails.json', 'r') as openfile:
                     emailDictionary = json.load(openfile)
-                emailDictionary2={client.user.id:email.content}
+                emailDictionary2={str(client.user.id):email.content}
                 emailDictionary.update(emailDictionary2)
                 json_object= json.dumps(emailDictionary)
                 with open("emails.json", "w") as outfile:
@@ -135,7 +125,6 @@ class MyClient(discord.Client):
             else:
                 await message.channel.send('Setup process has been cancelled.')
                 return
-
 
         if message.content.startswith('t! debugid'):
             await message.channel.send(client.user.id)
@@ -152,7 +141,6 @@ class MyClient(discord.Client):
             vehicles = teslapy.Tesla(emailDictionary[str(client.user.id)]).vehicle_list()
             vehicles[0].sync_wake_up()
             vehicles[0].command('HONK_HORN')
-
 
 client = MyClient()
 client.run(tokens['discordToken'])
