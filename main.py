@@ -60,13 +60,7 @@ class MyClient(discord.Client):
                 await message.channel.send("Click the link below to login. Page Not Found will be shown at success.\n\n" + tesla.authorization_url() + "\n\nPlease copy the URL and paste it below after successful login")
                 # Wait for their reply with the url
 
-                # Perhaps can move this function outside to cleanup the code in the future?
-                def urlcheck(m):
-                    if m.content.startswith("https://auth.tesla.com/void/callback?code="):
-                        return True
-                    else:
-                        return False
-                msg = await client.wait_for('message', check=urlcheck)
+                msg = await client.wait_for('message', check=lambda m: m.content.startswith("https://auth.tesla.com/void/callback?code="))
                 if msg:
                     await message.channel.send("Attempting to login with provided URL...")
                     tesla.fetch_token(authorization_response=msg.content)
@@ -94,7 +88,7 @@ class MyClient(discord.Client):
             with open('emails.json', 'r') as openfile:
                 emailDictionary = json.load(openfile)
                 if str(client.user.id) in emailDictionary:
-                    await message.channel.send('Your current email is: ' + emailDictionary[str(client.user.id)])
+                    await message.channel.send(f'Your current email is: {emailDictionary[str(client.user.id)]}')
                 else:
                     await message.channel.send('You are currently do not have a registered email with us.')
 
